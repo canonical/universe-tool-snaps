@@ -48,9 +48,16 @@ snapcraft pack
 ```
 
 The result is `gpiod_<version>_<arch>.snap` for the machine you build on. To
-build for another architecture without such a machine, use
-`snapcraft remote-build --build-for=arm64` (it uploads the folder to
-Launchpad, which is public).
+build for another architecture without such a machine, use Launchpad through
+`snapcraft remote-build`. It needs a Launchpad account, uploads the project
+publicly, and only works when the project is the top level of a git
+repository, so build from a copy of the series folder:
+
+```bash
+cp -r gpiod/series24 /tmp/gpiod-series24 && cd /tmp/gpiod-series24
+git init -q && git add . && git commit -qm "gpiod series24"
+snapcraft remote-build --build-for=arm64
+```
 
 ## Install
 

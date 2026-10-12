@@ -40,11 +40,16 @@ The tool snap also needs `gpio-control` (access to `/dev/gpiochip*`) and
 | series24 | `libgpiod.so.2` | `libgpiod2t64` (Ubuntu 24.04) | `libgpiod2` |
 | series26 | `libgpiod.so.3` | `libgpiod3` (Ubuntu 26.04) | `libgpiod3` |
 
+Snap file names: a local `snapcraft pack` gives `gpiod_<version>_<arch>.snap`
+in the series folder; the Canonical CI release adds the series,
+`gpiod_<version>_<series>_<arch>.snap`. Use whichever files you have, and put
+the library and tool snaps of the same series side by side.
+
 Ubuntu Core, or classic without the library:
 
 ```bash
-sudo snap install --dangerous ./libgpiod_<version>_<series>_<arch>.snap
-sudo snap install --dangerous ./gpiod_<version>_<series>_<arch>.snap
+sudo snap install --dangerous ./libgpiod_<version>_[<series>_]<arch>.snap
+sudo snap install --dangerous ./gpiod_<version>_[<series>_]<arch>.snap
 sudo snap connect gpiod:gpio-control
 sudo snap connect gpiod:hardware-observe
 sudo snap connect gpiod:libgpiod libgpiod:libgpiod
@@ -54,7 +59,7 @@ Classic with the library already installed (for example Ubuntu 24.04 with
 `libgpiod2t64`, and the series24 gpiod snap):
 
 ```bash
-sudo snap install --dangerous ./gpiod_<version>_<series>_<arch>.snap
+sudo snap install --dangerous ./gpiod_<version>_[<series>_]<arch>.snap
 sudo snap connect gpiod:gpio-control
 sudo snap connect gpiod:hardware-observe
 sudo snap connect gpiod:host-libgpiod

@@ -14,7 +14,9 @@ Open a pull request; say which systems you tested the snap on.
   test checks the copies are identical.
 - Build from archive debs: `plugin: nil` with `stage-packages`. Take the snap
   version from the staged deb (`adopt-info` + `craftctl set version`), so the
-  snap version says exactly which archive version is inside.
+  snap version shows which archive version is inside (snap versions cannot
+  hold `:`, so an epoch `1:` becomes `1-`, and they are cut to 32
+  characters).
 - `confinement: strict`. Use interfaces for device access, never `devmode`.
 - No `aliases:` in `apps:`. snapd ignores it for `--dangerous` installs; the
   README of the snap lists the `snap alias` commands instead.
@@ -146,4 +148,9 @@ bash gpiod/tests/test-gpiod-env.sh                       # library selection log
    every recipe that should support it.
 2. Make sure the `host-<lib>` plug lists that arch's library triplet and
    that the command-chain script maps `SNAP_ARCH` to it.
-3. Build on a machine of that arch, or with `snapcraft remote-build`.
+3. Build on a machine of that arch, or with `snapcraft remote-build` from a
+   copy of the series folder (see the README; remote-build needs the project
+   at the top level of its own git repository).
+4. Say in the pull request that you added an arch. Canonical's build CI needs
+   a runner for every arch it builds; until one exists for the new arch, the
+   CI stops and names the arch instead of building without it.
