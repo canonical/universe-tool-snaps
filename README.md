@@ -70,8 +70,10 @@ sudo gpiodetect
 ```
 
 `--dangerous` is needed because these snaps are not signed by the Snap Store,
-and `snap alias` is what gives you the plain `gpiodetect` command name. The
-tools need `sudo` because `/dev/gpiochip*` belongs to root.
+and `snap alias` is what gives you the plain `gpiodetect` command name. Run
+the tools with `sudo` unless your user can already open `/dev/gpiochip*`
+(`ls -l /dev/gpiochip*`: often root only, or root plus a group such as
+`dialout`).
 
 Canonical staff: prebuilt snaps for every series and arch are published by the
 internal `canonical/universe-tool-snaps-build` CI.

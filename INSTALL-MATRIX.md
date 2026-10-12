@@ -60,8 +60,10 @@ sudo snap connect gpiod:host-libgpiod
   `libgpiod.so.2 not found`, because it only accepts the exact soname it was
   built against. If you see that message while the library snap is
   connected, the two snaps come from different series.
-- **Run the tools with `sudo`.** `/dev/gpiochip*` is owned by root; without
-  `sudo` you get `Permission denied` even with every plug connected.
+- **Run the tools with `sudo`** unless your user can already open
+  `/dev/gpiochip*` (`ls -l /dev/gpiochip*`: often root only, or root plus a
+  group such as `dialout`). Connected plugs do not change those file
+  permissions, so without access you get `Permission denied`.
 - **Check which library is in use** when a result looks wrong:
   `sudo snap run --shell gpiod.gpiodetect -c 'echo "$LD_LIBRARY_PATH"'`
   prints the chosen directory first.
