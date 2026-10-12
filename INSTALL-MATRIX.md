@@ -67,9 +67,10 @@ sudo snap connect gpiod:host-libgpiod
 
 ## Rules that keep this safe
 
-- **Take both snaps from the same series.** A manual `snap connect` does not
-  compare content labels, so a series24 `gpiod` can be connected to a
-  series26 `libgpiod`. The tool then refuses to start with
+- **Take both snaps from the same series.** For snaps installed with
+  `--dangerous`, snapd skips its connection policy and does not compare
+  content labels, so a series24 `gpiod` can be connected to a series26
+  `libgpiod`. The tool then refuses to start with
   `libgpiod.so.2 not found`, because it only accepts the exact soname it was
   built against. If you see that message while the library snap is
   connected, the two snaps come from different series. Mixing series can also
