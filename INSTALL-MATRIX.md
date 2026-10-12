@@ -54,10 +54,12 @@ sudo snap connect gpiod:host-libgpiod
 
 ## Rules that keep this safe
 
-- **Take both snaps from the same series.** The content label names the
-  library ABI (`libgpiod2`, `libgpiod3`), so snapd refuses to connect a
-  series24 `gpiod` to a series26 `libgpiod` instead of letting the tool load
-  the wrong library.
+- **Take both snaps from the same series.** A manual `snap connect` does not
+  compare content labels, so a series24 `gpiod` can be connected to a
+  series26 `libgpiod`. The tool then refuses to start with
+  `libgpiod.so.2 not found`, because it only accepts the exact soname it was
+  built against. If you see that message while the library snap is
+  connected, the two snaps come from different series.
 - **Run the tools with `sudo`.** `/dev/gpiochip*` is owned by root; without
   `sudo` you get `Permission denied` even with every plug connected.
 - **Check which library is in use** when a result looks wrong:

@@ -67,8 +67,10 @@ Ubuntu Core:  libgpiod snap       --content (libgpiod2)----------->  gpiod
 
 - Export it with a content slot whose label is the **library ABI**, that is
   the soname package name (`libgpiod2`, `libgpiod3`), not the project name.
-  snapd only connects a plug and a slot with the same label, so a tool built
-  for one ABI can never load another:
+  Automatic connections (from the store or a gadget) only pair a plug and a
+  slot with the same label. A manual `snap connect` does not check it, so
+  the tool's command-chain script must also look for the exact soname and
+  stop when it is missing, never fall back to another version:
 
   ```yaml
   slots:

@@ -21,6 +21,9 @@ mkdir -p "$SNAP/libgpiod" "$host"
 check "neither: exit 1" "$(run >/dev/null; echo $?)" "1"
 grep -q "snap connect gpiod:libgpiod libgpiod:libgpiod" "$t/err"; check "neither: connect hint" "$?" "0"
 
+echo v2 > "$SNAP/libgpiod/libgpiod.so.3" # a library snap of another series
+check "content has another ABI only: exit 1" "$(run >/dev/null; echo $?)" "1"
+
 echo content > "$SNAP/libgpiod/libgpiod.so.2"
 check "content only" "$(run)" "$SNAP/libgpiod:/keep"
 
