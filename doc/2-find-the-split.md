@@ -195,11 +195,14 @@ changes for a different reason:
 | Snap | Ships | Changes when |
 |---|---|---|
 | `alsa-utils` | the tools (`aplay`, `arecord`, `amixer`, `alsactl`, `alsaucm`, ...) | the tools are updated |
-| `alsa-lib` | `libasound.so.2` with its configuration (and the plugins, if your tests need them) | the library is updated |
+| `alsa-lib` | `libasound.so.2` with its configuration (deb `libasound2-data`); the everyday plugins (`hw`, `plug`, `dmix`, `dsnoop`, `rate`, `softvol`) are built into `libasound.so.2` | the library is updated |
 | `alsa-ucm-conf` | the per-board UCM configuration | a board needs different audio routing: a vendor ships its own snap with the same content label, and neither the tools nor the library are rebuilt |
 
-If you add the plugins deb, the libraries the plugins need go through the
-same six steps. (The ALSA recipes are not in this repository yet; this is the
+The separate `libasound2-plugins` deb only adds bridges to other audio
+stacks (PulseAudio, JACK, OSS) and extra resamplers, and it depends on
+libraries that are not in the base (`libpulse0`, `libjack-jackd2-0`,
+`libavcodec60`, ...). Test tools rarely need it; if yours do, those libraries
+go through the same six steps and become snaps of their own. (The ALSA recipes are not in this repository yet; this is the
 shape they follow.)
 
 ## Decide
