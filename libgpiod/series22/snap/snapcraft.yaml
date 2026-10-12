@@ -1,0 +1,38 @@
+name: libgpiod
+base: core22
+adopt-info: libgpiod
+summary: libgpiod runtime library as a content snap
+description: |
+  Ships libgpiod.so.2 from the Ubuntu 22.04 archive (deb libgpiod2) and
+  shares it over the "libgpiod2" content interface, so tool snaps such as
+  gpiod can use it on Ubuntu Core. See INSTALL-MATRIX.md for when you need it.
+grade: stable
+confinement: strict
+license: LGPL-2.1-or-later
+architectures:
+  - build-on: [amd64]
+    build-for: [amd64]
+  - build-on: [arm64]
+    build-for: [arm64]
+
+slots:
+  libgpiod:
+    interface: content
+    content: libgpiod2 # library ABI, not project name: a v1 tool must never mount libgpiod3
+    read:
+      - $SNAP/lib
+
+parts:
+  libgpiod:
+    plugin: nil
+    stage-packages:
+      - libgpiod2
+    organize:
+      usr/lib/*/libgpiod.so*: lib/ # arch-neutral path for the slot
+    prime:
+      - lib/libgpiod.so*
+      - usr/share/doc/*/copyright
+    override-build: |
+      craftctl default
+      ver="$(apt-cache policy libgpiod2 | awk '/Candidate:/{print $2}')"
+      craftctl set version="$(printf '%s' "$ver" | tr ':' '-' | cut -c1-32)"

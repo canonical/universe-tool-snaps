@@ -1,0 +1,79 @@
+name: gpiod
+base: core22
+adopt-info: gpiod
+summary: libgpiod command-line tools (gpiodetect, gpioinfo, gpioget, ...)
+description: |
+  The gpiod tools from the Ubuntu 22.04 archive. The snap does not ship
+  libgpiod: it uses the host library on classic Ubuntu or the libgpiod
+  content snap on Ubuntu Core. See INSTALL-MATRIX.md.
+grade: stable
+confinement: strict
+license: GPL-2.0-or-later
+architectures:
+  - build-on: [amd64]
+    build-for: [amd64]
+  - build-on: [arm64]
+    build-for: [arm64]
+lint:
+  ignore:
+    - library # libgpiod is missing on purpose; gpiod-env.sh provides it at run time
+
+environment:
+  GPIOD_SONAME: libgpiod.so.2
+
+plugs:
+  libgpiod:
+    interface: content
+    content: libgpiod2
+    target: $SNAP/libgpiod
+  host-libgpiod:
+    interface: system-files
+    read:
+      - /var/lib/snapd/hostfs/usr/lib/x86_64-linux-gnu
+      - /var/lib/snapd/hostfs/usr/lib/aarch64-linux-gnu
+      - /var/lib/snapd/hostfs/usr/lib/arm-linux-gnueabihf
+      - /var/lib/snapd/hostfs/usr/lib/riscv64-linux-gnu
+
+apps:
+  gpiodetect:
+    command: usr/bin/gpiodetect
+    command-chain: [bin/gpiod-env.sh]
+    plugs: [gpio-control, hardware-observe, libgpiod, host-libgpiod]
+  gpioinfo:
+    command: usr/bin/gpioinfo
+    command-chain: [bin/gpiod-env.sh]
+    plugs: [gpio-control, hardware-observe, libgpiod, host-libgpiod]
+  gpioget:
+    command: usr/bin/gpioget
+    command-chain: [bin/gpiod-env.sh]
+    plugs: [gpio-control, hardware-observe, libgpiod, host-libgpiod]
+  gpioset:
+    command: usr/bin/gpioset
+    command-chain: [bin/gpiod-env.sh]
+    plugs: [gpio-control, hardware-observe, libgpiod, host-libgpiod]
+  gpiofind:
+    command: usr/bin/gpiofind
+    command-chain: [bin/gpiod-env.sh]
+    plugs: [gpio-control, hardware-observe, libgpiod, host-libgpiod]
+  gpiomon:
+    command: usr/bin/gpiomon
+    command-chain: [bin/gpiod-env.sh]
+    plugs: [gpio-control, hardware-observe, libgpiod, host-libgpiod]
+
+parts:
+  gpiod:
+    plugin: nil
+    stage-packages:
+      - gpiod
+    prime:
+      - usr/bin/gpio* # the tools only; the libgpiod deb pulled in as a dependency stays out
+      - usr/share/doc/gpiod/copyright
+    override-build: |
+      craftctl default
+      ver="$(apt-cache policy gpiod | awk '/Candidate:/{print $2}')"
+      craftctl set version="$(printf '%s' "$ver" | tr ':' '-' | cut -c1-32)"
+  scripts:
+    plugin: dump
+    source: scripts/
+    organize:
+      gpiod-env.sh: bin/gpiod-env.sh
