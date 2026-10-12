@@ -188,11 +188,19 @@ ALSA shows all three kinds of extra files: `libasound.so.2` (deb
 `libasound2t64`) reads its configuration from `/usr/share/alsa/` (deb
 `libasound2-data`), loads plugins from `/usr/lib/<arch>/alsa-lib/` (deb
 `libasound2-plugins`), and the per-board UCM configuration in
-`/usr/share/alsa/ucm2/` comes from `alsa-ucm-conf`. That is why audio needs
-at least three snaps: the tools, the library with its configuration and
-plugins, and the per-board configuration (the plugins need more libraries of
-their own, which go through the same steps). (ALSA is not in this repository yet; it is the
-shape to follow for a library like that.)
+`/usr/share/alsa/ucm2/` comes from `alsa-ucm-conf`. That is why audio is
+split into three snaps, and that is the right split, because each part
+changes for a different reason:
+
+| Snap | Ships | Changes when |
+|---|---|---|
+| `alsa-utils` | the tools (`aplay`, `arecord`, `amixer`, `alsactl`, `alsaucm`, ...) | the tools are updated |
+| `alsa-lib` | `libasound.so.2` with its configuration (and the plugins, if your tests need them) | the library is updated |
+| `alsa-ucm-conf` | the per-board UCM configuration | a board needs different audio routing: a vendor ships its own snap with the same content label, and neither the tools nor the library are rebuilt |
+
+If you add the plugins deb, the libraries the plugins need go through the
+same six steps. (The ALSA recipes are not in this repository yet; this is the
+shape they follow.)
 
 ## Decide
 

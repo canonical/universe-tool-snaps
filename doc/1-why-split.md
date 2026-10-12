@@ -85,9 +85,9 @@ is a run-time cache of the system's file, not a second owner.)
 
 ## The same idea at a larger scale
 
-Audio follows the same shape with at least three snaps instead of two (not in this
-repository yet; it is the shape to follow), because it also has
-board-specific data: `alsa-utils` (tools), `alsa-lib` (the library and
+Audio follows the same shape with three snaps instead of two, because it
+also has board-specific data (the ALSA recipes are not in this repository
+yet): `alsa-utils` (tools), `alsa-lib` (the library and
 its plugins) and `alsa-ucm-conf` (the per-board configuration). A board
 vendor can swap the configuration snap without rebuilding the tools. The
 pattern is always the same: **split along the lines that change for
