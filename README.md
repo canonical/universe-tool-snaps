@@ -65,6 +65,7 @@ sudo snap install --dangerous ./gpiod_<version>_<arch>.snap
 sudo snap connect gpiod:gpio-control
 sudo snap connect gpiod:hardware-observe
 sudo snap connect gpiod:libgpiod libgpiod:libgpiod
+# series22/24 tools; series26 has gpionotify instead of gpiofind (see gpiod/README.md)
 for t in gpiodetect gpioinfo gpioget gpioset gpiofind gpiomon; do sudo snap alias gpiod.$t $t; done
 sudo gpiodetect
 ```

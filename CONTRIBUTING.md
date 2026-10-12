@@ -70,7 +70,11 @@ Ubuntu Core:  libgpiod snap       --content (libgpiod2)----------->  gpiod
   Automatic connections (from the store or a gadget) only pair a plug and a
   slot with the same label. A manual `snap connect` does not check it, so
   the tool's command-chain script must also look for the exact soname and
-  stop when it is missing, never fall back to another version:
+  stop when it is missing, never fall back to another version. A soname is
+  not the whole ABI either: a library built for a newer Ubuntu release can
+  need a newer glibc than an older base has, so the tool and library snaps
+  must come from the same series, and the host-library route only works on a
+  host running the snap's Ubuntu release:
 
   ```yaml
   slots:

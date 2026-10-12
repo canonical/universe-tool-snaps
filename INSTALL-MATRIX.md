@@ -8,18 +8,26 @@ its command-chain script looks for the library in this order:
 2. **Library snap**, through the `<lib>` content plug.
 3. Neither: the tool exits with a message naming the plug to connect.
 
-So the question for each system is: does the host already have the exact
-library (soname) the tool was built against?
+So the question for each system is: can the tool load the host's library?
+That needs the exact soname the tool was built against **and** a host on the
+same Ubuntu release as the snap's series. Inside the snap the tool runs on the
+base's C library (core22 ships glibc 2.35), and a library built for a newer
+release can need a newer one: Ubuntu 24.04's `libgpiod.so.2` needs
+`GLIBC_2.38`, so a series22 tool cannot load it even though the soname matches.
 
 ## Decision table
 
-| System | Host has the soname the tool needs? | Install | Connect |
-|---|---|---|---|
-| Ubuntu Core | never (no apt) | library snap + tool snap | `<tool>:<lib> <lib>:<lib>` |
-| Classic | yes | **tool snap only** | `<tool>:host-<lib>` |
-| Classic | no, but you may install debs | the library deb with apt, then **tool snap only** | `<tool>:host-<lib>` |
-| Classic | no, and the deb is not an option (different series, or no apt allowed) | library snap + tool snap | `<tool>:<lib> <lib>:<lib>` |
-| Classic | yes, and the library snap is also connected | either works; the **host library wins** | both |
+| System | Install | Connect |
+|---|---|---|
+| Ubuntu Core (no apt) | library snap + tool snap, same series | `<tool>:<lib> <lib>:<lib>` |
+| Classic, same release as the snap's series, library deb installed | **tool snap only** | `<tool>:host-<lib>` |
+| Classic, same release, library deb missing but apt allowed | the library deb with apt, then **tool snap only** | `<tool>:host-<lib>` |
+| Classic, same release, apt not allowed | library snap + tool snap, same series | `<tool>:<lib> <lib>:<lib>` |
+| Classic, **different** release from the snap's series | library snap + tool snap, same series | `<tool>:<lib> <lib>:<lib>`, and **disconnect** `<tool>:host-<lib>` |
+
+When both plugs are connected the **host library wins**, which is why the
+last row must disconnect `host-<lib>`: otherwise the tool keeps picking the
+host library it cannot load.
 
 ## gpiod
 
@@ -59,7 +67,9 @@ sudo snap connect gpiod:host-libgpiod
   series26 `libgpiod`. The tool then refuses to start with
   `libgpiod.so.2 not found`, because it only accepts the exact soname it was
   built against. If you see that message while the library snap is
-  connected, the two snaps come from different series.
+  connected, the two snaps come from different series. Mixing series can also
+  end in a loader error such as `version GLIBC_2.38 not found` (a series22
+  tool with a series24 library: both are `libgpiod.so.2`).
 - **Run the tools with `sudo`** unless your user can already open
   `/dev/gpiochip*` (`ls -l /dev/gpiochip*`: often root only, or root plus a
   group such as `dialout`). Connected plugs do not change those file
