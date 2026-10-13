@@ -25,10 +25,10 @@ Open a pull request; say which systems you tested the snap on.
 
 ## Add a tool
 
-1. Decide whether the library needs its own snap; see the next section.
-2. Create `<tool>/seriesNN/snap/snapcraft.yaml` for every series the tool
-   exists in. Copy the closest existing recipe (`gpiod` for a tool with a
-   library snap) and change names, debs, sonames and the app list.
+1. Find the split: [doc/2-find-the-split.md](doc/2-find-the-split.md).
+2. Create `<tool>/seriesNN/snap/snapcraft.yaml` (and the library snap's) for
+   every series the tool exists in, from the templates in
+   [doc/3-recipe-shape.md](doc/3-recipe-shape.md).
 3. List the apps from the deb's file list (`/usr/bin/...`) on
    [packages.ubuntu.com](https://packages.ubuntu.com) for each series; tool
    sets change between releases (libgpiod v2 dropped `gpiofind` and added
@@ -42,94 +42,16 @@ Open a pull request; say which systems you tested the snap on.
 
 ## Split a library from its tools
 
-Split when the tool links against a shared library that comes from **its own
-deb** (for example `gpiod` needs `libgpiod2`). Do not split when the tool only
-needs libraries that are already in the base snap (libc and friends).
+Every tool here ships without its shared library. [doc/](doc/README.md)
+explains why, shows how to find the split for a new tool, and gives the two
+recipe templates with the naming rules and the reviewer checklist. In short:
 
-The split gives you two snaps that are updated and replaced independently:
-
-```text
-classic:      host libgpiod.so.2  --system-files (host-libgpiod)-->  gpiod
-Ubuntu Core:  libgpiod snap       --content (libgpiod2)----------->  gpiod
-```
-
-### Library snap (content provider)
-
-- Stage only the runtime library deb.
-- Move the library to an arch-neutral directory so the slot path is the same
-  on every arch:
-
-  ```yaml
-  organize:
-    usr/lib/*/libgpiod.so*: lib/
-  prime:
-    - lib/libgpiod.so*
-    - usr/share/doc/*/copyright
-  ```
-
-- Export it with a content slot whose label is the **library ABI**, that is
-  the soname package name (`libgpiod2`, `libgpiod3`), not the project name.
-  For snaps from the Snap Store, snapd only connects a plug and a slot with
-  the same label. For snaps installed with `--dangerous`, as the snaps from
-  this repository are, snapd skips that check, so the tool's command-chain
-  script must also look for the exact soname and
-  stop when it is missing, never fall back to another version. A soname is
-  not the whole ABI either: a library built for a newer Ubuntu release can
-  need a newer glibc than an older base has, so the tool and library snaps
-  must come from the same series, and the host-library route only works on a
-  host running the snap's Ubuntu release:
-
-  ```yaml
-  slots:
-    libgpiod:
-      interface: content
-      content: libgpiod2
-      read:
-        - $SNAP/lib
-  ```
-
-### Tool snap (content consumer)
-
-- Stage the tool deb, but prime **only the tools**; the library deb comes in
-  as a dependency and must stay out:
-
-  ```yaml
-  prime:
-    - usr/bin/gpio*
-    - usr/share/doc/gpiod/copyright
-  ```
-
-- Silence the linter that reports the library as missing; that is the point:
-
-  ```yaml
-  lint:
-    ignore:
-      - library
-  ```
-
-- Declare two plugs: the content plug (same label as the slot) and a
-  `system-files` plug that reads the host library directory for every
-  supported arch triplet.
-- Put the soname in `environment:` and run every app through a
-  `command-chain` script that picks the library. Copy
-  `gpiod/series24/scripts/gpiod-env.sh` and its test
-  `gpiod/tests/test-gpiod-env.sh`, then rename `GPIOD_SONAME`, the plug names
-  and the content directory. The order is: host library, then the content
-  snap, then a clear error.
-- If the library also loads plugins or data from fixed paths, export those
-  too and set the variable the library reads. ALSA is the example: one snap
-  each for the tools (`alsa-utils`), the library and its plugins (`alsa-lib`,
-  with `ALSA_PLUGIN_DIR`), and the board-specific data (`alsa-ucm-conf`, with
-  `ALSA_CONFIG_UCM2`), so a board can replace the data snap without
-  rebuilding the tools.
-
-### Check the split
-
-```bash
-unsquashfs -l gpiod_*.snap | grep -c 'libgpiod.so'      # 0: the tool snap ships no library
-sudo snap run --shell gpiod.gpiodetect -c 'ldd "$SNAP/usr/bin/gpiodetect" | grep gpiod'
-bash gpiod/tests/test-gpiod-env.sh                       # library selection logic
-```
+- the tool snap primes only the tools (`prime:` lists `usr/bin/...`);
+- the library snap ships only the sonames the tools need, under `$SNAP/lib`,
+  over a content slot labelled `lib<name><N>`;
+- every app runs through a copy of `gpiod-env.sh`, which takes the host
+  library on classic and the library snap on Ubuntu Core, and stops with a
+  clear message when the exact soname is missing.
 
 ## Add a series
 
