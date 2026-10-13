@@ -10,6 +10,9 @@ the library the system already ships; on Ubuntu Core it uses the library
 snap. That way a test exercises the system's own library whenever there is
 one, and the tool behaves like the deb you would install on a classic image.
 
+New to snaps, or to why the tools and the library are separate snaps? Start
+with [doc/](doc/README.md).
+
 ## Layout
 
 One folder per snap, one sub-folder per Ubuntu series. Every series folder is
@@ -18,7 +21,8 @@ a complete snapcraft project.
 ```text
 universe-tool-snaps/
 ├── INSTALL-MATRIX.md      which snaps to install on which system
-├── CONTRIBUTING.md        add a tool, a series or an arch; split a library from its tools
+├── CONTRIBUTING.md        add a tool, a series or an arch
+├── doc/                   why and how the library is split from the tools (start here)
 ├── libgpiod/              library snap (content provider)
 │   ├── series22/snap/snapcraft.yaml    base core22, Ubuntu 22.04 debs
 │   ├── series24/snap/snapcraft.yaml    base core24, Ubuntu 24.04 debs
