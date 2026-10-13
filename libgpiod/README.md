@@ -13,7 +13,7 @@ only when the host does not have the library; see
 
 The versions are the archive versions when the recipes were written; a
 rebuild picks up whatever the archive has at that time, and the snap version
-always equals the deb version inside.
+is the version of the deb inside.
 
 The slot exports `$SNAP/lib`, which holds `libgpiod.so.*` for the snap's
 architecture.

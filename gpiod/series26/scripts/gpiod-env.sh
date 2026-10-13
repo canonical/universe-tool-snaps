@@ -18,13 +18,21 @@ esac
 
 host_lib="$hostfs/usr/lib/$triplet/$GPIOD_SONAME"
 copy_dir="$SNAP_USER_DATA/host-lib"
+tmp="$copy_dir/.$GPIOD_SONAME.$$"
+libdir=""
 
 # The loader cannot use the library in place on hostfs under strict confinement: copy it.
-if mkdir -p "$copy_dir" && cp -L "$host_lib" "$copy_dir/$GPIOD_SONAME" 2>/dev/null; then
+# Copy to a temp file and rename it over the old copy, never cp onto it: a tool that is
+# already running has the old copy mapped and would crash if the file were rewritten.
+if mkdir -p "$copy_dir" 2>/dev/null && cp -L "$host_lib" "$tmp" 2>/dev/null &&
+  mv -f "$tmp" "$copy_dir/$GPIOD_SONAME"; then
   libdir="$copy_dir"
-elif [ -e "$SNAP/libgpiod/$GPIOD_SONAME" ]; then
+fi
+rm -f "$tmp"
+if [ -z "$libdir" ] && [ -e "$SNAP/libgpiod/$GPIOD_SONAME" ]; then
   libdir="$SNAP/libgpiod"
-else
+fi
+if [ -z "$libdir" ]; then
   cat >&2 <<EOF
 $SNAP_INSTANCE_NAME: $GPIOD_SONAME not found.
   Ubuntu Core: install the libgpiod snap of the same series, then

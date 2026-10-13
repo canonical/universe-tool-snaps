@@ -48,9 +48,16 @@ snapcraft pack
 ```
 
 The result is `gpiod_<version>_<arch>.snap` for the machine you build on. To
-build for another architecture without such a machine, use
-`snapcraft remote-build --build-for=arm64` (it uploads the folder to
-Launchpad, which is public).
+build for another architecture without such a machine, use Launchpad through
+`snapcraft remote-build`. It needs a Launchpad account, uploads the project
+publicly, and only works when the project is the top level of a git
+repository, so build from a copy of the series folder:
+
+```bash
+cp -r gpiod/series24 /tmp/gpiod-series24 && cd /tmp/gpiod-series24
+git init -q && git add . && git commit -qm "gpiod series24"
+snapcraft remote-build --build-for=arm64
+```
 
 ## Install
 
@@ -65,13 +72,16 @@ sudo snap install --dangerous ./gpiod_<version>_<arch>.snap
 sudo snap connect gpiod:gpio-control
 sudo snap connect gpiod:hardware-observe
 sudo snap connect gpiod:libgpiod libgpiod:libgpiod
+# series22/24 tools; series26 has gpionotify instead of gpiofind (see gpiod/README.md)
 for t in gpiodetect gpioinfo gpioget gpioset gpiofind gpiomon; do sudo snap alias gpiod.$t $t; done
 sudo gpiodetect
 ```
 
 `--dangerous` is needed because these snaps are not signed by the Snap Store,
-and `snap alias` is what gives you the plain `gpiodetect` command name. The
-tools need `sudo` because `/dev/gpiochip*` belongs to root.
+and `snap alias` is what gives you the plain `gpiodetect` command name. Run
+the tools with `sudo` unless your user can already open `/dev/gpiochip*`
+(`ls -l /dev/gpiochip*`: often root only, or root plus a group such as
+`dialout`).
 
 Canonical staff: prebuilt snaps for every series and arch are published by the
 internal `canonical/universe-tool-snaps-build` CI.

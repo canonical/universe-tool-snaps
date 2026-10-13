@@ -8,7 +8,7 @@ description: |
   content snap on Ubuntu Core. See INSTALL-MATRIX.md.
 grade: stable
 confinement: strict
-license: GPL-2.0-or-later
+license: LGPL-2.1-or-later # libgpiod 1.x tools; v2 tools are GPL-2.0-or-later
 architectures:
   - build-on: [amd64]
     build-for: [amd64]

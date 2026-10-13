@@ -14,7 +14,9 @@ Open a pull request; say which systems you tested the snap on.
   test checks the copies are identical.
 - Build from archive debs: `plugin: nil` with `stage-packages`. Take the snap
   version from the staged deb (`adopt-info` + `craftctl set version`), so the
-  snap version says exactly which archive version is inside.
+  snap version shows which archive version is inside (snap versions cannot
+  hold `:`, so an epoch `1:` becomes `1-`, and they are cut to 32
+  characters).
 - `confinement: strict`. Use interfaces for device access, never `devmode`.
 - No `aliases:` in `apps:`. snapd ignores it for `--dangerous` installs; the
   README of the snap lists the `snap alias` commands instead.
@@ -67,8 +69,15 @@ Ubuntu Core:  libgpiod snap       --content (libgpiod2)----------->  gpiod
 
 - Export it with a content slot whose label is the **library ABI**, that is
   the soname package name (`libgpiod2`, `libgpiod3`), not the project name.
-  snapd only connects a plug and a slot with the same label, so a tool built
-  for one ABI can never load another:
+  For snaps from the Snap Store, snapd only connects a plug and a slot with
+  the same label. For snaps installed with `--dangerous`, as the snaps from
+  this repository are, snapd skips that check, so the tool's command-chain
+  script must also look for the exact soname and
+  stop when it is missing, never fall back to another version. A soname is
+  not the whole ABI either: a library built for a newer Ubuntu release can
+  need a newer glibc than an older base has, so the tool and library snaps
+  must come from the same series, and the host-library route only works on a
+  host running the snap's Ubuntu release:
 
   ```yaml
   slots:
@@ -140,4 +149,9 @@ bash gpiod/tests/test-gpiod-env.sh                       # library selection log
    every recipe that should support it.
 2. Make sure the `host-<lib>` plug lists that arch's library triplet and
    that the command-chain script maps `SNAP_ARCH` to it.
-3. Build on a machine of that arch, or with `snapcraft remote-build`.
+3. Build on a machine of that arch, or with `snapcraft remote-build` from a
+   copy of the series folder (see the README; remote-build needs the project
+   at the top level of its own git repository).
+4. Say in the pull request that you added an arch. Canonical's build CI needs
+   a runner for every arch it builds; until one exists for the new arch, the
+   CI stops and names the arch instead of building without it.

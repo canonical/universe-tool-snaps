@@ -21,17 +21,25 @@ mkdir -p "$SNAP/libgpiod" "$host"
 check "neither: exit 1" "$(run >/dev/null; echo $?)" "1"
 grep -q "snap connect gpiod:libgpiod libgpiod:libgpiod" "$t/err"; check "neither: connect hint" "$?" "0"
 
+echo v2 > "$SNAP/libgpiod/libgpiod.so.3" # a library snap of another series
+check "content has another ABI only: exit 1" "$(run >/dev/null; echo $?)" "1"
+
 echo content > "$SNAP/libgpiod/libgpiod.so.2"
 check "content only" "$(run)" "$SNAP/libgpiod:/keep"
 
 echo host > "$host/libgpiod.so.2"
 check "host wins" "$(run)" "$SNAP_USER_DATA/host-lib:/keep"
 check "host copied" "$(cat "$SNAP_USER_DATA/host-lib/libgpiod.so.2")" "host"
+ino="$(stat -c %i "$SNAP_USER_DATA/host-lib/libgpiod.so.2")"; run >/dev/null
+[ "$ino" != "$(stat -c %i "$SNAP_USER_DATA/host-lib/libgpiod.so.2")" ]
+check "copy replaced by rename (a running tool keeps its mapped copy)" "$?" "0"
+check "no temp files left" "$(ls -A "$SNAP_USER_DATA/host-lib")" "libgpiod.so.2"
 
 rm "$host/libgpiod.so.2" # the copy from the run above is still there
 check "stale copy ignored" "$(run)" "$SNAP/libgpiod:/keep"
 
 echo host > "$host/libgpiod.so.2"; chmod 000 "$host/libgpiod.so.2"
 check "host lib unreadable -> content" "$(run)" "$SNAP/libgpiod:/keep"
+check "no temp files left after a failed copy" "$(ls -A "$SNAP_USER_DATA/host-lib")" "libgpiod.so.2"
 
 exit $fail
